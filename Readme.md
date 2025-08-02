@@ -11,7 +11,7 @@
 - 🎨 **Color-Coded Risk Levels**
 - 🛑 **Execution Confirmation Prompt**
 - ⚙️ **Locally Hosted & Privacy-Focused (uses Ollama + Phi model)**
-
+aditya
 ---
 
 ## 🔐 Risk Levels
