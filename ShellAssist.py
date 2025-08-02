@@ -7,7 +7,7 @@ from risk import assess_risk
 console = Console()
 
 def main():
-    console.print("[bold cyan]ShellGuard CLI[/bold cyan] - Safe Shell Assistant 🔐")
+    console.print("[bold cyan]ShellAssist CLI[/bold cyan] - Safe Shell Assistant 🔐")
 
     while True:
         user_input = Prompt.ask("\n💬 Enter natural language command (or type 'exit')")
@@ -34,3 +34,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
