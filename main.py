@@ -5,8 +5,12 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.text import Text
 from rich.prompt import Prompt
+from datetime import datetime  # === NEW ===
 
 console = Console()
+
+history_log = []  # === NEW ===
+log_file_path = "shell_assist.log"  # === NEW ===
 
 # ----------------------------
 # Risk Scoring System
@@ -99,7 +103,32 @@ def translate_to_shell(prompt):
             console.print("[bold red]Invalid choice. Try again.[/bold red]")
 
 # ----------------------------
-# Command Execution
+# Explain Command (NEW FEATURE)
+# ----------------------------
+def explain_command(command):  # === NEW ===
+    console.print("[bold cyan]Getting explanation for this command...[/bold cyan]")
+    response = ollama.chat(
+        model='phi',
+        messages=[
+            {"role": "system", "content": "Explain concisely what the following Linux shell command does."},
+            {"role": "user", "content": command}
+        ]
+    )
+    explanation = response['message']['content'].strip()
+    console.print(Panel.fit(f"[bold blue]Explanation:[/bold blue]\n{explanation}"))
+
+# ----------------------------
+# Log Command to File (NEW FEATURE)
+# ----------------------------
+def log_command(user_input, command, score):  # === NEW ===
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    entry = f"[{timestamp}] Prompt: {user_input} → Command: {command} | Risk Score: {score}/10\n"
+    history_log.append(entry)
+    with open(log_file_path, "a") as f:
+        f.write(entry)
+
+# ----------------------------
+# Run the Shell Command
 # ----------------------------
 def run_shell_command(command):
     try:
@@ -119,10 +148,17 @@ def main():
 
     while True:
         user_input = console.input("[bold yellow]You > [/bold yellow]").strip()
-        
+
         if user_input.lower() in ['exit', 'quit']:
             console.print("[italic red]Exiting...[/italic red]")
             break
+
+        # === NEW ===: View command history
+        if user_input.lower() == "history":
+            console.print("[bold magenta]Recent Command History:[/bold magenta]")
+            for entry in history_log[-10:]:
+                console.print(entry.strip())
+            continue
 
         command = translate_to_shell(user_input)
         if not command:
@@ -138,7 +174,15 @@ def main():
             f"[bold white]Explanation:[/bold white] {explanation}"
         ))
 
+        # === NEW === Ask if user wants an explanation
+        want_explanation = console.input("Do you want to know what this command does? (y/n): ").strip().lower()
+        if want_explanation == 'y':
+            explain_command(command)
+
         confirm = console.input("Do you want to run this command? (y/n): ").strip().lower()
+
+        # Log the command regardless of execution
+        log_command(user_input, command, score)  # === NEW ===
 
         if confirm == 'y':
             console.print("🟢 Executing command...\n")
